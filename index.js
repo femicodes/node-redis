@@ -54,6 +54,10 @@ const cache = (req, res, next) => {
 
 app.get('/repos/:username', cache, getRepos);
 
+// https://medium.com/tech-tajawal/introduction-to-caching-redis-node-js-e477eb969eab
+
+// https://github.com/iMichaelOwolabi/node-redis-caching-tut/blob/master/index.js
+
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 })
