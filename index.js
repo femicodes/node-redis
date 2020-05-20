@@ -1,11 +1,8 @@
 const express = require('express');
 const fetch = require('node-fetch');
-const redis = require('redis');
 
 const PORT = 5000;
-const REDIS_PORT = 6379;
-
-const client = redis.createClient(REDIS_PORT);
+const { setCache, checkCache } = require('./middleware');
 
 const app = express();
 
@@ -20,7 +17,7 @@ const getRepos = async (req, res) => {
 
     const numberOfRepos = data.public_repos;
 
-    client.setex(username, 3600, numberOfRepos);
+    setCache(username, numberOfRepos);
 
     res.status(200).json({
       status: true,
@@ -35,28 +32,7 @@ const getRepos = async (req, res) => {
   }
 };
 
-const cache = (req, res, next) => {
-  const { username } = req.params;
-
-  client.get(username, (err, data) => {
-    if (err) throw err;
-
-    if (data) {
-      console.log(data)
-      res.status(200).json({
-        status: true,
-        repos: `${username} has ${data} repos`
-      });
-    }
-    next();
-  });
-}
-
-app.get('/repos/:username', cache, getRepos);
-
-// https://medium.com/tech-tajawal/introduction-to-caching-redis-node-js-e477eb969eab
-
-// https://github.com/iMichaelOwolabi/node-redis-caching-tut/blob/master/index.js
+app.get('/repos/:username', checkCache, getRepos);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
